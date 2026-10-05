@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#102f39">
+  <title>Calais Mobilités — Atlas du réseau de bus</title>
+  <meta name="description" content="Explorez les lignes et les arrêts de bus de Calais. Carte interactive, recherche d’arrêts et analyse géographique de proximité.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23102f39'/%3E%3Cpath d='M10 28V12h20M10 20h20v8' fill='none' stroke='%235ce0ba' stroke-width='4'/%3E%3Ccircle cx='10' cy='28' r='4' fill='white'/%3E%3Ccircle cx='30' cy='12' r='4' fill='white'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script src="geo.js" defer></script><script src="app.js" defer></script>
+</head>
+<body>
+<header class="header">
+  <a class="brand" href="./" aria-label="Calais Mobilités, accueil"><span class="brand-mark"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 25V8h18M7 17h18v8"/><circle cx="7" cy="25" r="3"/><circle cx="25" cy="8" r="3"/></svg></span><span>calais<span class="brand-light">mobilités</span></span></a>
+  <span class="header-divider"></span><span class="header-caption">ATLAS DU RÉSEAU</span>
+  <div class="header-end"><span class="snapshot">Données géographiques</span><button class="btn quiet" id="aboutButton">À propos <span class="info-icon">i</span></button></div>
+</header>
+<main class="workspace">
+<aside class="sidebar">
+  <div class="intro"><div class="eyebrow">CALAIS & SES ENVIRONS</div><h1>Le réseau, <span>à portée de main.</span></h1><p>Repérez un arrêt. Explorez une ligne.<br>Trouvez ce qui vous rapproche.</p></div>
+  <div class="tabs" role="tablist" aria-label="Outils d’exploration"><button role="tab" aria-selected="true" aria-controls="explorePanel" id="exploreTab" class="active">Explorer</button><button role="tab" aria-selected="false" aria-controls="nearPanel" id="nearTab">À proximité</button></div>
+  <section id="explorePanel" role="tabpanel" aria-labelledby="exploreTab">
+    <div class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><input type="search" id="searchInput" placeholder="Rechercher un arrêt ou une ligne" aria-label="Rechercher un arrêt ou une ligne"><kbd>/</kbd></div>
+    <div class="result-heading"><h2 id="listTitle">Les lignes du réseau</h2><span id="resultCount" class="count">…</span></div>
+    <div class="filters" aria-label="Catégorie de lignes"><button class="active" data-filter="regular" aria-pressed="true">Régulières</button><button data-filter="special" aria-pressed="false">Autres lignes</button><button data-filter="all" aria-pressed="false">Toutes</button></div>
+    <div id="results" class="results"><div class="loading">Chargement du réseau…</div></div>
+  </section>
+  <section id="nearPanel" role="tabpanel" aria-labelledby="nearTab" hidden>
+    <div class="near-intro"><h2>Les arrêts autour de vous</h2><p>Choisissez un point sur la carte ou utilisez votre position.</p><button class="btn primary full" id="locateButton"><span>◎</span> Utiliser ma position</button><button class="btn outline full" id="choosePointButton">Choisir un point sur la carte</button></div>
+    <div class="radius-head"><label for="radius">Rayon de recherche</label><strong id="radiusValue">500 m</strong></div><input id="radius" type="range" min="100" max="1500" step="100" value="500"><div class="range-labels"><span>100 m</span><span>1,5 km</span></div>
+    <div class="near-note" id="nearNote">Les distances sont calculées à vol d’oiseau.</div><div id="nearResults" class="near-results"><div class="empty-state">Un point de départ suffit.<br><span>Vos arrêts proches apparaîtront ici.</span></div></div>
+  </section>
+  <footer class="sidebar-footer"><span class="footer-mark">⌘</span><div><strong>Un territoire. Toutes les connexions.</strong><span>559 points d’arrêt · <span id="totalRoutes">59</span> lignes</span></div><button id="dataButton" aria-label="Informations sur les données">i</button></footer>
+</aside>
+<section class="map-section" aria-label="Carte interactive des bus de Calais">
+  <div id="map" tabindex="0" role="application" aria-label="Carte du réseau. Faites glisser pour déplacer, utilisez plus et moins pour zoomer."><div id="tiles" aria-hidden="true"></div><canvas id="mapCanvas" aria-hidden="true"></canvas><div id="mapFallback" class="map-fallback" hidden>Fond de carte indisponible · les données du réseau restent consultables.</div></div>
+  <div class="map-top"><div class="map-heading"><span class="eyebrow">EXPLORATION CARTOGRAPHIQUE</span><h2 id="mapTitle">Calais, en mouvement.</h2></div><button class="btn map-btn" id="resetButton"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5M7 12h10m-5-5v10"/></svg> Vue d’ensemble</button></div>
+  <div class="map-status" id="mapStatus">Chargement des données…</div>
+  <div class="map-controls"><button id="zoomIn" aria-label="Zoom avant">+</button><button id="zoomOut" aria-label="Zoom arrière">−</button><div class="control-gap"></div><button id="mapLocate" aria-label="Afficher les arrêts autour de ma position">◎</button></div>
+  <div class="layers"><button id="layersButton" class="btn map-btn" aria-expanded="false" aria-controls="layersPanel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 10 9 5 9-5m-18 5 9 5 9-5"/></svg> Affichage</button><div id="layersPanel" class="layers-panel" hidden><label><input type="checkbox" id="showStops" checked> Points d’arrêt</label><label><input type="checkbox" id="showLines" checked> Tracés des lignes</label><label><input type="checkbox" id="showBase" checked> Fond OpenStreetMap</label></div></div>
+  <div id="detail" class="detail-card" hidden></div>
+  <div class="map-bottom"><div class="legend"><span class="line-symbol"></span>Lignes <span class="stop-symbol"></span>Arrêts <span id="scale" class="scale">1 km</span></div><div class="attribution">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · Données fournies</div></div>
+</section>
+</main>
+<div id="toast" role="status" aria-live="polite" hidden></div>
+<dialog id="aboutDialog"><button id="closeDialog" class="close" aria-label="Fermer">×</button><div class="eyebrow">À PROPOS DE L’ATLAS</div><h2>La mobilité se lit<br>sur le territoire.</h2><p>Calais Mobilités est un explorateur indépendant des données géographiques du réseau de bus de Calais. Il réunit les tracés et les points d’arrêt pour faciliter la découverte du réseau et l’analyse de sa proximité.</p><div class="about-stats"><div><strong>559</strong><span>points d’arrêt</span></div><div><strong>59</strong><span>lignes distinctes</span></div><div><strong>2</strong><span>fichiers GeoJSON</span></div></div><h3>Ce que les données permettent</h3><p>La recherche utilise les noms d’arrêts et les identifiants de lignes. L’analyse de proximité mesure les distances à vol d’oiseau. Les arrêts associés à un tracé sont des candidats situés à moins de 60 m de ce tracé : cette association géométrique ne garantit pas une desserte.</p><h3>Une photographie géographique</h3><p>Les fichiers ne contiennent ni horaires, ni passages en temps réel, ni séquence officielle des arrêts. La date de validité et la licence de réutilisation ne sont pas renseignées dans les fichiers. Vérifiez ces informations auprès du fournisseur avant une diffusion publique.</p><p>Le code d’accessibilité « 0 » signifie que l’information n’est pas disponible. Les choix de carte restent sur votre appareil. Votre position est utilisée uniquement dans votre navigateur.</p><div class="source-links"><a href="data/arrets.geojson" download="arrets_bus_calais.geojson">Arrêts · GeoJSON</a><a href="data/lignes.geojson" download="lignes_bus_calais.geojson">Lignes · GeoJSON</a></div></dialog>
+</body></html>
